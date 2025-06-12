@@ -1,24 +1,22 @@
-const admin = require('firebase-admin');
+import admin from 'firebase-admin';
 
 let db;
 
 try {
-  // Try to load service account from file
-  const serviceAccount = require('../serviceAccountKey.json');
+  const serviceAccount = await import('../serviceAccountKey.json', { assert: { type: "json" } });
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+    credential: admin.credential.cert(serviceAccount.default)
   });
-  
+
   db = admin.firestore();
-  console.log('Firebase initialized successfully');
+  console.log('Firebase inicializado com sucesso!');
 } catch (error) {
-  console.log('Firebase service account not found. Using mock database for development.');
-  
-  // Mock database for development
+  console.log('Arquivo serviceAccountKey.json não encontrado. Usando banco de dados mock para desenvolvimento.');
+
   db = {
     collection: () => ({
       add: async (data) => {
-        console.log('Mock: Adding expense:', data);
+        console.log('Mock: Adicionando gasto:', data);
         return { id: 'mock-id-' + Date.now() };
       },
       get: async () => ({
@@ -28,4 +26,4 @@ try {
   };
 }
 
-module.exports = db;
+export default db;

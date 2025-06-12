@@ -1,7 +1,9 @@
-const express = require('express');
+import express from 'express';
+import { addExpense, getInsights } from '../controllers/expenseController.js';
+
 const router = express.Router();
-const expenseController = require('../controllers/expenseController');
 
-router.post('/add-expense', expenseController.addExpense);
+router.post('/add-expense', addExpense);
+router.get('/insights', getInsights);
 
-module.exports = router;
+export default router;

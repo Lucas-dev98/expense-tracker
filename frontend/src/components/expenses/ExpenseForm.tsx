@@ -1,40 +1,62 @@
 import React, { useState } from 'react';
 
 interface ExpenseFormProps {
-  onAddExpense: (description: string) => void;
+  user: { uid: string };
+  addExpense: (expense: { description: string; amount: number; category: string; createdAt: Date }) => void;
 }
 
-const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense }) => {
+const ExpenseForm: React.FC<ExpenseFormProps> = ({ user, addExpense }) => {
   const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState('');
+  const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10)); // yyyy-mm-dd
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (description.trim()) {
-      onAddExpense(description);
-      setDescription('');
-    }
+    if (!description || !amount || !category || !date) return;
+    addExpense({
+      description,
+      amount: parseFloat(amount),
+      category,
+      createdAt: new Date(date)
+    });
+    setDescription('');
+    setAmount('');
+    setCategory('');
+    setDate(new Date().toISOString().slice(0, 10));
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4">Adicionar Gasto</h2>
-      <div className="mb-4">
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-          Descrição do Gasto
-        </label>
-        <input
-          type="text"
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Ex: Almoço no restaurante R$25,00"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-      <button
-        type="submit"
-        className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
+    <form onSubmit={handleSubmit} className="mb-4 space-y-2">
+      <input
+        type="text"
+        placeholder="Descrição"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        className="w-full p-2 border rounded"
+      />
+      <input
+        type="number"
+        placeholder="Valor"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        className="w-full p-2 border rounded"
+      />
+      <input
+        type="text"
+        placeholder="Categoria"
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        className="w-full p-2 border rounded"
+      />
+      <input
+        type="date"
+        value={date}
+        onChange={e => setDate(e.target.value)}
+        className="w-full p-2 border rounded"
+        required
+      />
+      <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded">
         Adicionar Gasto
       </button>
     </form>

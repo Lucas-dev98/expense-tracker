@@ -1,13 +1,25 @@
 import axios from 'axios';
 
-const api = axios.create({
-  baseURL: 'http://localhost:3001/api',
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
+export const api = axios.create({
+  baseURL: API_BASE_URL,
 });
 
-export const addExpense = (description: string, userId: string) => {
-  return api.post('/add-expense', { description, userId });
+export const analyzeExpense = async (description: string) => {
+  const response = await api.post('/analyze-expense', { description });
+  return response.data;
 };
 
-export const getExpenses = (userId: string) => {
-  return api.get(`/expenses?userId=${userId}`);
+export const addExpense = async (description: string, userId: string) => {
+  try {
+    const response = await api.post('/expenses', {
+      description,
+      userId
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao adicionar gasto:', error);
+    throw error;
+  }
 };
