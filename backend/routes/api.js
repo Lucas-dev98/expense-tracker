@@ -1,9 +1,12 @@
 import express from 'express';
-import { addExpense, getInsights } from '../controllers/expenseController.js';
-
+import { addExpense, getInsights, deleteExpense, updateExpense } from '../controllers/expenseController.js';
 const router = express.Router();
 
-router.post('/add-expense', addExpense);
+// Rota para adicionar uma despesa
+// Rota para obter insights
 router.get('/insights', getInsights);
+router.delete('/expenses/:id', deleteExpense);
+router.put('/expenses/:id', updateExpense);
+router.post('/add-expense', addExpense);
 
 export default router;

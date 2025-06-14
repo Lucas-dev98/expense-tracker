@@ -1,19 +1,19 @@
 import db from '../config/firebase.js';
+import Insight from '../models/insight.js';
 import Expense from '../models/expense.js';
 import { isValidExpense } from '../utils/validators.js';
-import { generateInsightsWithGrok, processExpense } from '../services/aiProcessor.js';
+import { generateInsightsWithGemini } from '../services/aiProcessor.js';
 
 export const addExpense = async (req, res) => {
   try {
-    const { description, userId } = req.body;
-    const { amount, category } = processExpense(description);
+    const { description, amount, category, userId, createdAt } = req.body;
 
     const expense = new Expense({
       description,
       amount,
       category,
       userId,
-      createdAt: new Date(),
+      createdAt: createdAt ? new Date(createdAt) : new Date(),
     });
 
     if (!isValidExpense(expense)) {
@@ -29,22 +29,54 @@ export const addExpense = async (req, res) => {
   }
 };
 
+export const deleteExpense = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await db.collection('expenses').doc(id).delete();
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao excluir gasto.' });
+  }
+};
+
+export const updateExpense = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { description, amount, category, createdAt } = req.body;
+    await db
+      .collection('expenses')
+      .doc(id)
+      .update({
+        description,
+        amount,
+        category,
+        createdAt: createdAt ? new Date(createdAt) : new Date(),
+      });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao editar gasto.' });
+  }
+};
+
 export const getInsights = async (req, res) => {
   try {
-    res.set('Cache-Control', 'no-store');
     const { userId } = req.query;
     const snapshot = await db
       .collection('expenses')
       .where('userId', '==', userId)
       .get();
     const expenses = snapshot.docs.map((doc) => doc.data());
-    const insights = await generateInsightsWithGrok(expenses);
-    console.log('Insights gerados:');
-    insights.forEach((insight, idx) => {
-      console.log(`  ${idx + 1}. ${insight}`);
-    });
+    const insights = await generateInsightsWithGemini(expenses);
+
+    // Salva os insights no banco (opcional)
+    const insightDoc = new Insight({ userId, insights, createdAt: new Date() });
+    await db.collection('insights').add({ ...insightDoc });
+
     res.json({ insights });
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao gerar insights.' });
+    console.error('Erro ao gerar/salvar insights:', error);
+    res
+      .status(500)
+      .json({ error: `Erro ao gerar/salvar insights: ${error.message}` });
   }
 };

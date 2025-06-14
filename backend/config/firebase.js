@@ -1,11 +1,18 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import admin from 'firebase-admin';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let db;
 
 try {
-  const serviceAccount = await import('../serviceAccountKey.json', { assert: { type: "json" } });
+  const serviceAccountPath = path.join(__dirname, '../serviceAccountKey.json');
+  const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount.default)
+    credential: admin.credential.cert(serviceAccount)
   });
 
   db = admin.firestore();

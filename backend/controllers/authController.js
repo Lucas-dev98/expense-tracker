@@ -1,9 +1,9 @@
-const admin = require('firebase-admin');
-const db = require('../config/firebase');
-const User = require('../models/user');
-const { isValidEmail, isValidPassword } = require('../utils/validators');
+import admin from 'firebase-admin';
+import db from '../config/firebase.js';
+import User from '../models/user.js';
+import { isValidEmail, isValidPassword } from '../utils/validators.js';
 
-exports.register = async (req, res) => {
+export const register = async (req, res) => {
   const { email, password, displayName } = req.body;
 
   // Validação dos dados
@@ -29,7 +29,10 @@ exports.register = async (req, res) => {
     });
 
     // Salva no Firestore
-    await db.collection('users').doc(user.uid).set({ ...user });
+    await db
+      .collection('users')
+      .doc(user.uid)
+      .set({ ...user });
 
     res.status(201).json({ uid: user.uid, email: user.email });
   } catch (error) {

@@ -1,13 +1,10 @@
 import 'dotenv/config';
-import fetch from 'node-fetch';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-export function processExpense(text) {
-  // ... (igual ao seu código atual)
-}
+const apiKey = process.env.GEMINI_API_KEY;
+const genAI = new GoogleGenerativeAI(apiKey);
 
-const apiKey = process.env.GROK_API_KEY;
-
-export async function generateInsightsWithGrok(expenses) {
+export async function generateInsightsWithGemini(expenses) {
   const prompt = `
     Analise os seguintes gastos (em formato JSON) e gere insights financeiros em português, de forma clara e objetiva.
     Responda APENAS neste formato JSON:
@@ -21,35 +18,29 @@ export async function generateInsightsWithGrok(expenses) {
     Gastos: ${JSON.stringify(expenses)}
   `;
 
-  const response = await fetch('https://api.grok.x.ai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'grok-3-latest',
-      messages: [
-        { role: 'system', content: 'Você é um assistente financeiro que gera insights claros e objetivos.' },
-        { role: 'user', content: prompt }
-      ],
-      stream: false,
-      temperature: 0
-    })
-  });
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro-latest' });
 
-  if (!response.ok) {
-    throw new Error('Erro ao consultar a IA Grok');
-  }
-
-  const data = await response.json();
-  let insights = [];
   try {
-    const content = data.choices?.[0]?.message?.content;
-    const parsed = JSON.parse(content);
-    insights = parsed.insights || [];
-  } catch (e) {
-    insights = [data.choices?.[0]?.message?.content || 'Não foi possível gerar insights.'];
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
+    // Tenta extrair o JSON dos insights
+    let insights = [];
+    try {
+      const match = text.match(/\{[\s\S]*\}/);
+      if (match) {
+        const parsed = JSON.parse(match[0]);
+        insights = parsed.insights || [];
+      } else {
+        insights = [text];
+      }
+    } catch (e) {
+      insights = [text];
+    }
+    return insights;
+  } catch (error) {
+    console.error('Erro ao consultar a IA Gemini:', error);
+    throw new Error('Erro ao consultar a IA Gemini');
   }
-  return insights;
 }

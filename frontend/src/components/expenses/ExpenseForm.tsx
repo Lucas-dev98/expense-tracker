@@ -1,29 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Expense } from '../../types/Expense';
 
 interface ExpenseFormProps {
   user: { uid: string };
-  addExpense: (expense: { description: string; amount: number; category: string; createdAt: Date }) => void;
+  addExpense: (expense: Omit<Expense, 'id'>) => void;
+  editingExpense?: Expense | null;
+  updateExpense?: (expense: Expense) => void;
+  cancelEdit?: () => void;
 }
 
-const ExpenseForm: React.FC<ExpenseFormProps> = ({ user, addExpense }) => {
+const ExpenseForm: React.FC<ExpenseFormProps> = ({
+  user,
+  addExpense,
+  editingExpense,
+  updateExpense,
+  cancelEdit,
+}) => {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
-  const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10)); // yyyy-mm-dd
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+
+  useEffect(() => {
+    if (editingExpense) {
+      setDescription(editingExpense.description);
+      setAmount(editingExpense.amount.toString());
+      setCategory(editingExpense.category);
+      setDate(
+        typeof editingExpense.createdAt === 'string'
+          ? editingExpense.createdAt.slice(0, 10)
+          : new Date(editingExpense.createdAt).toISOString().slice(0, 10)
+      );
+    } else {
+      setDescription('');
+      setAmount('');
+      setCategory('');
+      setDate(new Date().toISOString().slice(0, 10));
+    }
+  }, [editingExpense]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!description || !amount || !category || !date) return;
-    addExpense({
-      description,
-      amount: parseFloat(amount),
-      category,
-      createdAt: new Date(date)
-    });
+
+    if (editingExpense && updateExpense && editingExpense.id) {
+      updateExpense({
+        ...editingExpense,
+        description,
+        amount: parseFloat(amount),
+        category,
+        createdAt: new Date(date),
+      });
+    } else {
+      addExpense({
+        description,
+        amount: parseFloat(amount),
+        category,
+        createdAt: new Date(date),
+        userId: user.uid,
+      });
+    }
+
     setDescription('');
     setAmount('');
     setCategory('');
     setDate(new Date().toISOString().slice(0, 10));
+    if (cancelEdit) cancelEdit();
   };
 
   return (
@@ -52,13 +94,24 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ user, addExpense }) => {
       <input
         type="date"
         value={date}
-        onChange={e => setDate(e.target.value)}
+        onChange={(e) => setDate(e.target.value)}
         className="w-full p-2 border rounded"
-        required
       />
-      <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded">
-        Adicionar Gasto
+      <button
+        type="submit"
+        className="w-full bg-blue-500 text-white p-2 rounded"
+      >
+        {editingExpense ? 'Salvar Alterações' : 'Adicionar Gasto'}
       </button>
+      {editingExpense && cancelEdit && (
+        <button
+          type="button"
+          onClick={cancelEdit}
+          className="w-full bg-gray-300 text-black p-2 rounded mt-2"
+        >
+          Cancelar
+        </button>
+      )}
     </form>
   );
 };

@@ -1,4 +1,4 @@
-class User {
+export default class User {
   constructor({ uid, email, displayName, photoURL, createdAt }) {
     this.uid = uid;
     this.email = email;
@@ -7,5 +7,3 @@ class User {
     this.createdAt = createdAt || new Date();
   }
 }
-
-module.exports = User;
