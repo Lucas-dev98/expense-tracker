@@ -4,6 +4,7 @@ import ExpenseList from '../components/expenses/ExpenseList';
 import Reports from '../components/reports/Reports';
 import { Expense } from "../types/Expense";
 import { useAuth } from "../context/AuthContext";
+import './Dashboard.scss';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -43,25 +44,37 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      {user && (
-        <ExpenseForm
-          user={user}
-          addExpense={(expense) => { void addExpense(expense); }}
-          editingExpense={editingExpense}
-          updateExpense={(expense) => { void updateExpense(expense); }}
-          cancelEdit={() => setEditingExpense(null)}
+    <div className="dashboard-container">
+      <div className="dashboard-content">
+        <div className="dashboard-left">
+          {user && (
+            <ExpenseForm
+              user={user}
+              addExpense={addExpense}
+              editingExpense={editingExpense}
+              updateExpense={updateExpense}
+              cancelEdit={() => setEditingExpense(null)}
+            />
+          )}
+        </div>
+        <div className="dashboard-right">
+          {user && <Reports userId={user.uid} />}
+        </div>
+      </div>
+      {/* Separador visual */}
+      <div className="dashboard-separator">
+        <hr className="dashboard-hr" />
+      </div>
+      <div className="dashboard-list-center">
+        <ExpenseList
+          expenses={expenses}
+          onDelete={async (id) => {
+            await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
+            setExpenses(expenses.filter((e) => e.id !== id));
+          }}
+          onEdit={handleEditExpense}
         />
-      )}
-      <ExpenseList
-        expenses={expenses}
-        onDelete={async (id) => {
-          await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
-          setExpenses(expenses.filter((e) => e.id !== id));
-        }}
-        onEdit={handleEditExpense}
-      />
-      {user && <Reports userId={user.uid} />}
+      </div>
     </div>
   );
 }

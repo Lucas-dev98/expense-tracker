@@ -1,5 +1,6 @@
 import React from 'react';
-import { Expense } from "../../types/Expense";
+import { Expense } from '../../types/Expense';
+import './ExpenseList.scss';
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -11,49 +12,79 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
   expenses,
   onDelete,
   onEdit,
-}) => (
-  <div className="max-w-md mx-auto">
-    <h2 className="text-xl font-semibold mb-2">Lista de Gastos</h2>
-  <ul className="space-y-4">
-  {expenses.map((expense) => {
-    let dateStr = '';
-    if ((expense.createdAt as any)?.toDate) {
-      dateStr = (expense.createdAt as any).toDate().toLocaleDateString('pt-BR');
-    } else if (
-      typeof expense.createdAt === 'string' ||
-      expense.createdAt instanceof Date
-    ) {
-      dateStr = new Date(expense.createdAt).toLocaleDateString('pt-BR');
-    }
-    return (
-      <li
-        key={expense.id}
-        className="p-4 border rounded bg-white shadow flex flex-col sm:flex-row sm:justify-between sm:items-center"
-      >
-        <div>
-          <div className="font-semibold">{expense.description}</div>
-          <div className="text-sm text-gray-500">{expense.category} • {dateStr}</div>
-        </div>
-        <div className="flex items-center gap-2 mt-2 sm:mt-0">
-          <span className="font-bold text-green-600">R${expense.amount.toFixed(2)}</span>
-          <button
-            className="text-blue-500 hover:underline"
-            onClick={() => onEdit(expense)}
-          >
-            Editar
-          </button>
-          <button
-            className="text-red-500 hover:underline"
-            onClick={() => onDelete(expense.id)}
-          >
-            Excluir
-          </button>
-        </div>
-      </li>
-    );
-  })}
-</ul>
-  </div>
-);
+}) => {
+  const total = expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+
+  return (
+    <div className="expense-list-card">
+      <h2 className="expense-list-title">
+        <span role="img" aria-label="list">📋</span> Lista de Gastos
+      </h2>
+      <div className="expense-list-total" style={{ marginBottom: '1rem', fontWeight: 'bold', fontSize: '1.1rem' }}>
+        Total:{' '}
+        <span style={{ color: total < 0 ? '#ef4444' : '#22c55e' }}>
+          {total < 0 ? '-' : '+'}R${Math.abs(total).toFixed(2)}
+        </span>
+      </div>
+      <ul className="expense-list-ul">
+        {expenses.length === 0 && (
+          <li className="expense-list-empty">Nenhum gasto cadastrado.</li>
+        )}
+        {expenses.map((expense) => {
+          let dateStr = '';
+          if ((expense.createdAt as any)?.toDate) {
+            dateStr = (expense.createdAt as any).toDate().toLocaleDateString('pt-BR');
+          } else if (
+            typeof expense.createdAt === 'string' ||
+            expense.createdAt instanceof Date
+          ) {
+            dateStr = new Date(expense.createdAt).toLocaleDateString('pt-BR');
+          }
+          return (
+            <li key={expense.id} className="expense-list-item">
+              <div className="expense-list-main">
+                <div className="expense-list-desc">{expense.description}</div>
+                <div className="expense-list-value">
+                  <span className={expense.type === 'Saida' ? 'saida' : 'entrada'}>
+                    {expense.amount < 0 ? '-' : '+'}R${Math.abs(expense.amount).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+              <div className="expense-list-details">
+                <span>{expense.category}</span>
+                <span>{dateStr}</span>
+                <span>{expense.type}</span>
+                <span>{expense.paymentMethod}</span>
+                {typeof expense.installmentCount === 'number' &&
+                  expense.installmentCount > 1 && (
+                    <span>
+                      Parcela {expense.currentInstallment ?? 1}/
+                      {expense.installmentCount}
+                    </span>
+                  )}
+              </div>
+              <div className="expense-list-actions">
+                <button
+                  className="edit-btn"
+                  onClick={() => onEdit(expense)}
+                  title="Editar"
+                >
+                  ✏️
+                </button>
+                <button
+                  className="delete-btn"
+                  onClick={() => onDelete(expense.id)}
+                  title="Excluir"
+                >
+                  🗑️
+                </button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+};
 
 export default ExpenseList;

@@ -3,6 +3,10 @@ export interface Expense {
   description: string;
   amount: number;
   category: string;
-  createdAt: Date | string;
+  createdAt: string | Date;
   userId: string;
+  type: 'Entrada' | 'Saida';
+  paymentMethod?: string;
+  installmentCount?: number;
+  currentInstallment?: number;
 }

@@ -1,0 +1,112 @@
+.expense-list-card {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 16px rgba(59, 130, 246, 0.08);
+  padding: 2rem 1.5rem;
+  margin: 0 auto;
+  max-width: 700px;
+}
+
+.expense-list-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.expense-list-ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.expense-list-empty {
+  text-align: center;
+  color: #888;
+  padding: 1.5rem 0;
+}
+
+.expense-list-item {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.expense-list-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.expense-list-desc {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #222;
+}
+
+.expense-list-value {
+  font-size: 1.1rem;
+  font-weight: bold;
+
+  .saida {
+    color: #ef4444;
+  }
+  .entrada {
+    color: #22c55e;
+  }
+}
+
+.expense-list-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  font-size: 0.95rem;
+  color: #555;
+  margin-top: 0.2rem;
+}
+
+.expense-list-actions {
+  margin-top: 0.3rem;
+  display: flex;
+  gap: 0.7rem;
+
+  .edit-btn,
+  .delete-btn {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.4rem;
+  }
+
+  .edit-btn:hover {
+    color: #2563eb;
+    background: #e0e7ff;
+  }
+  .delete-btn:hover {
+    color: #dc2626;
+    background: #fee2e2;
+  }
+
+  .expense-list-value {
+    font-size: 1.1rem;
+    font-weight: bold;
+
+    .saida {
+      color: #ef4444;
+    }
+    .entrada {
+      color: #22c55e;
+    }
+  }
+}
