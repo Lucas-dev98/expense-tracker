@@ -3,15 +3,12 @@ import ExpenseForm from '../components/expenses/ExpenseForm';
 import ExpenseList from '../components/expenses/ExpenseList';
 import Reports from '../components/reports/Reports';
 import { Expense } from "../types/Expense";
+import { useAuth } from "../context/AuthContext";
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [user, setUser] = useState<{ uid: string; email: string } | null>(null);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-
-  useEffect(() => {
-    setUser({ uid: 'EyBG0qfroETZ5cKL67aXRJyN8tS2', email: 'seu@email.com' });
-  }, []);
 
   useEffect(() => {
     if (user) {

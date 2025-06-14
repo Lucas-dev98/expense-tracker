@@ -80,3 +80,17 @@ export const getInsights = async (req, res) => {
       .json({ error: `Erro ao gerar/salvar insights: ${error.message}` });
   }
 };
+
+export const getExpenses = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const snapshot = await db
+      .collection('expenses')
+      .where('userId', '==', userId)
+      .get();
+    const expenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(expenses);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar gastos.' });
+  }
+};

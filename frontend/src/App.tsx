@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useAuth } from './context/AuthContext';
+import { useAuth, AuthProvider } from './context/AuthContext';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import Dashboard from './pages/Dashboard';
 import Header from './components/layout/Header';
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const { user, loading } = useAuth();
   const [screen, setScreen] = useState<'start' | 'login' | 'register'>('start');
 
@@ -38,15 +38,21 @@ const App: React.FC = () => {
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
           <div className="bg-white p-6 rounded-lg shadow-md max-w-sm w-full">
-            <Login setUser={() => {}} />
+            <Login />
             <p className="mt-4 text-center">
               Não tem conta?{' '}
-              <button className="text-blue-600 underline" onClick={() => setScreen('register')}>
+              <button
+                className="text-blue-600 underline"
+                onClick={() => setScreen('register')}
+              >
                 Cadastre-se
               </button>
             </p>
             <p className="mt-2 text-center">
-              <button className="text-gray-500 underline" onClick={() => setScreen('start')}>
+              <button
+                className="text-gray-500 underline"
+                onClick={() => setScreen('start')}
+              >
                 Voltar
               </button>
             </p>
@@ -62,12 +68,18 @@ const App: React.FC = () => {
             <Register onRegisterSuccess={() => setScreen('login')} />
             <p className="mt-4 text-center">
               Já tem conta?{' '}
-              <button className="text-blue-600 underline" onClick={() => setScreen('login')}>
+              <button
+                className="text-blue-600 underline"
+                onClick={() => setScreen('login')}
+              >
                 Faça login
               </button>
             </p>
             <p className="mt-2 text-center">
-              <button className="text-gray-500 underline" onClick={() => setScreen('start')}>
+              <button
+                className="text-gray-500 underline"
+                onClick={() => setScreen('start')}
+              >
                 Voltar
               </button>
             </p>
@@ -75,8 +87,11 @@ const App: React.FC = () => {
         </div>
       );
     }
+    // fallback para segurança
+    return null;
   }
 
+  // Usuário autenticado
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <Header />
@@ -84,5 +99,11 @@ const App: React.FC = () => {
     </div>
   );
 };
+
+const App: React.FC = () => (
+  <AuthProvider>
+    <AppContent />
+  </AuthProvider>
+);
 
 export default App;

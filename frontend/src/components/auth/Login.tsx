@@ -1,48 +1,63 @@
-import React, { useState } from 'react';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import React, { useState } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../firebaseConfig";
 
-const Login: React.FC<{ setUser: (user: any) => void }> = ({ setUser }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const auth = getAuth();
+const Login: React.FC = () => {
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErro(null);
+    setLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      setUser(userCredential.user);
-    } catch (err: any) {
-      setError('Erro ao fazer login: ' + err.message);
+      const userCredential = await signInWithEmailAndPassword(auth, email, senha);
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          uid: userCredential.user.uid,
+          email: userCredential.user.email,
+        })
+      );
+      window.location.reload();
+    } catch (error: any) {
+      setErro("E-mail ou senha inválidos.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-6 rounded-lg shadow-md max-w-sm w-full">
-        <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          className="w-full p-2 mb-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Senha"
-          className="w-full p-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <button
-          onClick={handleLogin}
-          className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Entrar
-        </button>
-      </div>
-    </div>
+    <form onSubmit={handleLogin} className="space-y-4">
+      <input
+        type="email"
+        placeholder="E-mail"
+        className="w-full p-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        required
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        autoComplete="email"
+      />
+      <input
+        type="password"
+        placeholder="Senha"
+        className="w-full p-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        required
+        value={senha}
+        onChange={(e) => setSenha(e.target.value)}
+        autoComplete="current-password"
+      />
+      {erro && <div className="text-red-500">{erro}</div>}
+      <button
+        type="submit"
+        className="w-full bg-blue-500 text-white p-2 rounded"
+        disabled={loading}
+      >
+        {loading ? "Entrando..." : "Entrar"}
+      </button>
+    </form>
   );
 };
 
