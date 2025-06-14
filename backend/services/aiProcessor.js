@@ -1,8 +1,8 @@
 import 'dotenv/config';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from "@google/genai";
 
-const apiKey = process.env.GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(apiKey);
+const apiKey = process.env.GEMINI_API_KEY || "AIzaSyCq3T7gC8WyxRXPMefwid8cWaZIWkrfFr0";
+const ai = new GoogleGenAI({ apiKey });
 
 export async function generateInsightsWithGemini(expenses) {
   const prompt = `
@@ -18,14 +18,14 @@ export async function generateInsightsWithGemini(expenses) {
     Gastos: ${JSON.stringify(expenses)}
   `;
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro-latest' });
-
   try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: prompt,
+    });
 
-    // Tenta extrair o JSON dos insights
+    // O novo SDK retorna o texto diretamente
+    let text = response.text;
     let insights = [];
     try {
       const match = text.match(/\{[\s\S]*\}/);
