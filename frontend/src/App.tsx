@@ -4,6 +4,7 @@ import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import Dashboard from './pages/Dashboard';
 import Header from './components/layout/Header';
+import Footer from './components/layout/Footer';
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth();
@@ -96,6 +97,7 @@ const AppContent: React.FC = () => {
     <div className="min-h-screen bg-gray-100 p-4">
       <Header />
       <Dashboard />
+      <Footer />
     </div>
   );
 };
