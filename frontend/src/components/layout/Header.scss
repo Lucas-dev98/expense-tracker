@@ -1,0 +1,54 @@
+.main-header {
+  background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+  color: #fff;
+  padding: 1rem 0;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+
+  &__container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+  }
+
+  &__logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  &__email {
+    font-size: 1rem;
+    background: rgba(255,255,255,0.15);
+    padding: 0.3rem 0.8rem;
+    border-radius: 1rem;
+  }
+
+  &__logout {
+    background: #fff;
+    color: #3b82f6;
+    border: none;
+    border-radius: 1rem;
+    padding: 0.4rem 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+
+    &:hover {
+      background: #3b82f6;
+      color: #fff;
+      border: 1px solid #fff;
+    }
+  }
+}

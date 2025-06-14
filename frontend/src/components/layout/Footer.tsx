@@ -1,10 +1,14 @@
 import React from 'react';
+import './Footer.scss';
 
 const Footer: React.FC = () => (
-  <footer className="w-full text-center py-4 bg-gray-200 mt-8">
-    <span className="text-gray-600 text-sm">
-      &copy; {new Date().getFullYear()} Gestão de Gastos com IA. Todos os direitos reservados.
-    </span>
+  <footer className="main-footer">
+    <div className="main-footer__container">
+      <span className="main-footer__brand">💸 Gestão de Gastos IA</span>
+      <span className="main-footer__copy">
+        &copy; {new Date().getFullYear()} Todos os direitos reservados.
+      </span>
+    </div>
   </footer>
 );
 
