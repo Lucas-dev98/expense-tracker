@@ -1,10 +1,5 @@
 import db from '../config/firebase.js';
-import Insight from '../models/insight.js';
-import Expense from '../models/expense.js';
-import { isValidExpense } from '../utils/validators.js';
-import { generateInsightsWithGemini } from '../services/aiProcessor.js';
-
-import db from '../config/firebase.js';
+import { generateAndSaveInsights } from '../services/aiProcessor.js';
 
 // Adicionar gasto
 export const addExpense = async (req, res) => {
@@ -18,8 +13,22 @@ export const addExpense = async (req, res) => {
       type,
       paymentMethod,
       installmentCount,
-      currentInstallment
+      currentInstallment,
     } = req.body;
+
+    const validMethods = ['Credito', 'Debito', 'Dinheiro'];
+    if (
+      !description ||
+      typeof amount !== 'number' ||
+      isNaN(amount) ||
+      !category ||
+      !userId ||
+      !type ||
+      !paymentMethod ||
+      !validMethods.includes(paymentMethod)
+    ) {
+      return res.status(400).json({ error: 'Dados obrigatórios ausentes ou inválidos.' });
+    }
 
     const expense = {
       description,
@@ -30,31 +39,21 @@ export const addExpense = async (req, res) => {
       type,
       paymentMethod,
       installmentCount,
-      currentInstallment
+      currentInstallment,
     };
 
     const docRef = await db.collection('expenses').add(expense);
-    res.json({ id: docRef.id, ...expense });
+    await generateAndSaveInsights(userId, db);
+    res.json({
+      id: docRef.id,
+      ...expense,
+      createdAt:
+        expense.createdAt instanceof Date
+          ? expense.createdAt.toISOString()
+          : expense.createdAt,
+    });
   } catch (error) {
     res.status(500).json({ error: 'Erro ao adicionar gasto.' });
-  }
-};
-
-// Listar gastos do usuário
-export const getExpenses = async (req, res) => {
-  try {
-    const { userId } = req.query;
-    const snapshot = await db
-      .collection('expenses')
-      .where('userId', '==', userId)
-      .get();
-    const expenses = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-    res.json(expenses);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar gastos.' });
   }
 };
 
@@ -62,7 +61,7 @@ export const getExpenses = async (req, res) => {
 export const updateExpense = async (req, res) => {
   try {
     const { id } = req.params;
-    const {
+    let {
       description,
       amount,
       category,
@@ -70,8 +69,25 @@ export const updateExpense = async (req, res) => {
       type,
       paymentMethod,
       installmentCount,
-      currentInstallment
+      currentInstallment,
     } = req.body;
+
+    amount = typeof amount === 'string' ? Number(amount) : amount;
+
+    const validMethods = ['Credito', 'Debito', 'Dinheiro'];
+    if (
+      !description ||
+      typeof amount !== 'number' ||
+      isNaN(amount) ||
+      !category ||
+      !type ||
+      !paymentMethod ||
+      !validMethods.includes(paymentMethod)
+    ) {
+      return res
+        .status(400)
+        .json({ error: 'Dados obrigatórios ausentes ou inválidos.' });
+    }
 
     const updatedExpense = {
       description,
@@ -81,11 +97,14 @@ export const updateExpense = async (req, res) => {
       type,
       paymentMethod,
       installmentCount,
-      currentInstallment
+      currentInstallment,
     };
 
     await db.collection('expenses').doc(id).update(updatedExpense);
+    const doc = await db.collection('expenses').doc(id).get();
+    const userId = doc.data().userId;
 
+    await generateAndSaveInsights(userId, db);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Erro ao editar gasto.' });
@@ -96,9 +115,58 @@ export const updateExpense = async (req, res) => {
 export const deleteExpense = async (req, res) => {
   try {
     const { id } = req.params;
+    const doc = await db.collection('expenses').doc(id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: 'Gasto não encontrado.' });
+    }
+    const userId = doc.data().userId;
     await db.collection('expenses').doc(id).delete();
+    await generateAndSaveInsights(userId, db);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Erro ao excluir gasto.' });
+  }
+};
+// Buscar gastos por usuário
+export const getExpenses = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({ error: 'userId é obrigatório.' });
+    }
+    const snapshot = await db.collection('expenses').where('userId', '==', userId).get();
+    const expenses = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    res.json(expenses);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar gastos.' });
+  }
+};
+
+export const getInsights = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({ error: 'userId é obrigatório.' });
+    }
+    const snapshot = await db
+      .collection('insights')
+      .where('userId', '==', userId)
+      .orderBy('createdAt', 'desc')
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) {
+      return res.json({ insights: [] });
+    }
+
+    const doc = snapshot.docs[0];
+    const data = doc.data();
+    res.json({ insights: data.insights || [] });
+  } catch (error) {
+    console.error('Erro ao buscar insights:', error); // ADICIONE ESTA LINHA
+    res.status(500).json({ error: 'Erro ao buscar insights.' });
   }
 };

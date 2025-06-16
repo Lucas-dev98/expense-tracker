@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 
 interface ReportsProps {
   userId: string;
+  refresh?: number; // NOVO
 }
 
-const Reports: React.FC<ReportsProps> = ({ userId }) => {
+const Reports: React.FC<ReportsProps> = ({ userId, refresh }) => {
   const [insights, setInsights] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -13,7 +14,9 @@ const Reports: React.FC<ReportsProps> = ({ userId }) => {
     const fetchInsights = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/insights?userId=${userId}`, { cache: "no-store" });
+        const res = await fetch(`/api/insights?userId=${userId}`, {
+          cache: 'no-store',
+        });
         const data = await res.json();
         setInsights(data.insights || []);
         console.log('Insights recebidos do backend:', data.insights);
@@ -23,28 +26,33 @@ const Reports: React.FC<ReportsProps> = ({ userId }) => {
       setLoading(false);
     };
     fetchInsights();
-  }, [userId]);
+  }, [userId, refresh]);
 
-return (
-  <div className="max-w-md mx-auto mt-4">
-    <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
-      <span role="img" aria-label="lightbulb">💡</span>
-      Relatórios & Insights
-    </h2>
-    {loading ? (
-      <p>Carregando insights...</p>
-    ) : (
-      <ul className="space-y-3">
-        {insights.map((insight, idx) => (
-          <li key={idx} className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded shadow flex items-start gap-2">
-            <span className="text-yellow-500 text-xl">💡</span>
-            <span>{insight}</span>
-          </li>
-        ))}
-      </ul>
-    )}
-  </div>
-);
-}
+  return (
+    <div className="max-w-md mx-auto mt-4">
+      <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+        <span role="img" aria-label="lightbulb">
+          💡
+        </span>
+        Relatórios & Insights
+      </h2>
+      {loading ? (
+        <p>Carregando insights...</p>
+      ) : (
+        <ul className="space-y-3">
+          {insights.map((insight, idx) => (
+            <li
+              key={idx}
+              className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded shadow flex items-start gap-2"
+            >
+              <span className="text-yellow-500 text-xl">💡</span>
+              <span>{insight}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
 
 export default Reports;

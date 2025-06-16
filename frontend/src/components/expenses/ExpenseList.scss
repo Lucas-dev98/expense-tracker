@@ -53,17 +53,15 @@
 }
 
 .expense-list-value {
-  font-size: 1.1rem;
-  font-weight: bold;
-
   .saida {
-    color: #ef4444;
+    color: #ef4444 !important;
+    font-weight: bold;
   }
   .entrada {
-    color: #22c55e;
+    color: #22c55e !important;
+    font-weight: bold;
   }
 }
-
 .expense-list-details {
   display: flex;
   flex-wrap: wrap;

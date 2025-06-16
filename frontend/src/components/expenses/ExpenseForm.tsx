@@ -30,11 +30,21 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
       setDescription(editingExpense.description);
       setAmount(editingExpense.amount.toString());
       setCategory(editingExpense.category);
-      setDate(
-        typeof editingExpense.createdAt === 'string'
-          ? editingExpense.createdAt.slice(0, 10)
-          : new Date(editingExpense.createdAt).toISOString().slice(0, 10)
-      );
+      // Protege o valor da data
+      let dateStr = '';
+      if (typeof editingExpense.createdAt === 'string') {
+        const d = new Date(editingExpense.createdAt);
+        dateStr = !isNaN(d.getTime())
+          ? d.toISOString().slice(0, 10)
+          : new Date().toISOString().slice(0, 10);
+      } else if (editingExpense.createdAt instanceof Date) {
+        dateStr = !isNaN(editingExpense.createdAt.getTime())
+          ? editingExpense.createdAt.toISOString().slice(0, 10)
+          : new Date().toISOString().slice(0, 10);
+      } else {
+        dateStr = new Date().toISOString().slice(0, 10);
+      }
+      setDate(dateStr);
       setType(editingExpense.type);
       setPaymentMethod(editingExpense.paymentMethod || '');
       setInstallmentCount(editingExpense.installmentCount?.toString() || '');
@@ -70,11 +80,12 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
     if (type === 'Entrada' && parsedAmount < 0)
       parsedAmount = Math.abs(parsedAmount);
 
+    // Sempre envia createdAt como string ISO
     const expenseData = {
       description,
       amount: parsedAmount,
       category,
-      createdAt: date,
+      createdAt: new Date(date).toISOString(),
       type,
       paymentMethod,
       installmentCount: installmentCount ? parseInt(installmentCount) : 1,
@@ -90,7 +101,6 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
     } else {
       addExpense(expenseData);
     }
-    
 
     setDescription('');
     setAmount('');
@@ -111,6 +121,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         className="w-full p-2 border rounded"
+        required
       />
       <input
         type="number"
@@ -118,6 +129,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
         className="w-full p-2 border rounded"
+        required
       />
       <input
         type="text"
@@ -125,28 +137,35 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
         value={category}
         onChange={(e) => setCategory(e.target.value)}
         className="w-full p-2 border rounded"
+        required
       />
       <input
         type="date"
         value={date}
         onChange={(e) => setDate(e.target.value)}
         className="w-full p-2 border rounded"
+        required
       />
       <select
         value={type}
         onChange={(e) => setType(e.target.value as 'Entrada' | 'Saida')}
         className="w-full p-2 border rounded"
+        required
       >
         <option value="Saida">Saída</option>
         <option value="Entrada">Entrada</option>
       </select>
-      <input
-        type="text"
-        placeholder="Forma de Pagamento"
+      <select
         value={paymentMethod}
         onChange={(e) => setPaymentMethod(e.target.value)}
         className="w-full p-2 border rounded"
-      />
+        required
+      >
+        <option value="">Selecione o método de pagamento</option>
+        <option value="Credito">Crédito</option>
+        <option value="Debito">Débito</option>
+        <option value="Dinheiro">Dinheiro</option>
+      </select>
       <input
         type="number"
         placeholder="Parcelamento (total de parcelas)"

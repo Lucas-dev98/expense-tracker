@@ -1,7 +1,7 @@
 import 'dotenv/config';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI } from '@google/genai';
 
-const apiKey = process.env.GEMINI_API_KEY || "AIzaSyCq3T7gC8WyxRXPMefwid8cWaZIWkrfFr0";
+const apiKey = process.env.GEMINI_API_KEY;
 const ai = new GoogleGenAI({ apiKey });
 
 export async function generateInsightsWithGemini(expenses) {
@@ -20,11 +20,10 @@ export async function generateInsightsWithGemini(expenses) {
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: 'gemini-2.0-flash',
       contents: prompt,
     });
 
-    // O novo SDK retorna o texto diretamente
     let text = response.text;
     let insights = [];
     try {
@@ -41,6 +40,26 @@ export async function generateInsightsWithGemini(expenses) {
     return insights;
   } catch (error) {
     console.error('Erro ao consultar a IA Gemini:', error);
-    throw new Error('Erro ao consultar a IA Gemini');
+    return ['Não foi possível gerar insights no momento.'];
   }
+}
+
+export async function generateAndSaveInsights(userId, db) {
+  const snapshot = await db
+    .collection('expenses')
+    .where('userId', '==', userId)
+    .get();
+  const expenses = snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
+  const insights = await generateInsightsWithGemini(expenses);
+
+  const insightObj = {
+    userId,
+    insights: Array.isArray(insights) ? insights : [],
+    createdAt: new Date(),
+  };
+  await db.collection('insights').add(insightObj);
 }
