@@ -25,6 +25,9 @@ Thumbs.db
 firebase-debug.log
 .firebaserc
 
+# Firebase service account key
+backend/serviceAccountKey.json
+
 # React
 *.env.local
 *.env.development.local
