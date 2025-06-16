@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   LineChart,
   Line,
@@ -7,9 +7,9 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-} from "recharts";
-import { Expense } from "../../types/Expense";
-import "./ExpenseLineChart.scss";
+} from 'recharts';
+import { Expense } from '../../types/Expense';
+import './ExpenseLineChart.scss';
 
 interface ExpenseLineChartProps {
   expenses: Expense[];
@@ -19,7 +19,7 @@ const ExpenseLineChart: React.FC<ExpenseLineChartProps> = ({ expenses }) => {
   // Agrupa por data (YYYY-MM-DD) e soma entradas e saídas separadamente
   const dailyData: Record<string, { entrada: number; saida: number }> = {};
   expenses.forEach((exp) => {
-    let dateStr = "";
+    let dateStr = '';
     if (exp.createdAt) {
       const d = new Date(exp.createdAt);
       if (!isNaN(d.getTime())) {
@@ -40,7 +40,7 @@ const ExpenseLineChart: React.FC<ExpenseLineChartProps> = ({ expenses }) => {
   const sortedDates = Object.keys(dailyData).sort();
 
   // Monta os dados para o gráfico
-  const chartData = sortedDates.map(date => ({
+  const chartData = sortedDates.map((date) => ({
     date,
     entrada: dailyData[date].entrada,
     saida: dailyData[date].saida,
@@ -49,16 +49,19 @@ const ExpenseLineChart: React.FC<ExpenseLineChartProps> = ({ expenses }) => {
   return (
     <div className="expense-line-chart-card">
       <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <h3 className="text-lg font-semibold mb-2">Evolução de Entradas e Saídas</h3>
+        <h3 className="text-lg font-semibold mb-2">
+          Evolução de Entradas e Saídas
+        </h3>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
             <YAxis />
             <Tooltip
-              formatter={(value: number, name: string) =>
-                [`R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, name === "entrada" ? "Entrada" : "Saída"]
-              }
+              formatter={(value: number, name: string) => [
+                `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                name === 'entrada' ? 'Entrada' : 'Saída',
+              ]}
             />
             <Line
               type="monotone"
@@ -66,8 +69,13 @@ const ExpenseLineChart: React.FC<ExpenseLineChartProps> = ({ expenses }) => {
               name="Entrada"
               stroke="#22c55e"
               strokeWidth={3}
-              dot={{ r: 5, fill: "#fff", stroke: "#22c55e", strokeWidth: 2 }}
-              activeDot={{ r: 7, fill: "#22c55e", stroke: "#fff", strokeWidth: 2 }}
+              dot={{ r: 5, fill: '#fff', stroke: '#22c55e', strokeWidth: 2 }}
+              activeDot={{
+                r: 7,
+                fill: '#22c55e',
+                stroke: '#fff',
+                strokeWidth: 2,
+              }}
             />
             <Line
               type="monotone"
@@ -75,8 +83,13 @@ const ExpenseLineChart: React.FC<ExpenseLineChartProps> = ({ expenses }) => {
               name="Saída"
               stroke="#ef4444"
               strokeWidth={3}
-              dot={{ r: 5, fill: "#fff", stroke: "#ef4444", strokeWidth: 2 }}
-              activeDot={{ r: 7, fill: "#ef4444", stroke: "#fff", strokeWidth: 2 }}
+              dot={{ r: 5, fill: '#fff', stroke: '#ef4444', strokeWidth: 2 }}
+              activeDot={{
+                r: 7,
+                fill: '#ef4444',
+                stroke: '#fff',
+                strokeWidth: 2,
+              }}
             />
           </LineChart>
         </ResponsiveContainer>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Expense } from '../../types/Expense';
+import { formatDate } from '../../utils/formatDate';
 import './ExpenseList.scss';
 
 interface ExpenseListProps {
@@ -18,9 +19,15 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
   return (
     <div className="expense-list-card">
       <h2 className="expense-list-title">
-        <span role="img" aria-label="list">📋</span> Lista de Gastos
+        <span role="img" aria-label="list">
+          📋
+        </span>{' '}
+        Lista de Gastos
       </h2>
-      <div className="expense-list-total" style={{ marginBottom: '1rem', fontWeight: 'bold', fontSize: '1.1rem' }}>
+      <div
+        className="expense-list-total"
+        style={{ marginBottom: '1rem', fontWeight: 'bold', fontSize: '1.1rem' }}
+      >
         Total:{' '}
         <span style={{ color: total < 0 ? '#ef4444' : '#22c55e' }}>
           {total < 0 ? '-' : '+'}R${Math.abs(total).toFixed(2)}
@@ -31,22 +38,17 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
           <li className="expense-list-empty">Nenhum gasto cadastrado.</li>
         )}
         {expenses.map((expense) => {
-          let dateStr = '';
-          if ((expense.createdAt as any)?.toDate) {
-            dateStr = (expense.createdAt as any).toDate().toLocaleDateString('pt-BR');
-          } else if (
-            typeof expense.createdAt === 'string' ||
-            expense.createdAt instanceof Date
-          ) {
-            dateStr = new Date(expense.createdAt).toLocaleDateString('pt-BR');
-          }
+          const dateStr = formatDate(expense.createdAt);
           return (
             <li key={expense.id} className="expense-list-item">
               <div className="expense-list-main">
                 <div className="expense-list-desc">{expense.description}</div>
                 <div className="expense-list-value">
-                  <span className={expense.type === 'Saida' ? 'saida' : 'entrada'}>
-                    {expense.amount < 0 ? '-' : '+'}R${Math.abs(expense.amount).toFixed(2)}
+                  <span
+                    className={expense.type === 'Saida' ? 'saida' : 'entrada'}
+                  >
+                    {expense.amount < 0 ? '-' : '+'}R$
+                    {Math.abs(expense.amount).toFixed(2)}
                   </span>
                 </div>
               </div>
