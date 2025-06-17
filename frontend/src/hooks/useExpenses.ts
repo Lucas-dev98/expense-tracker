@@ -7,7 +7,7 @@ export function useExpenses(userId?: string) {
     if (userId) {
       fetch(`/api/expenses?userId=${userId}`)
         .then((res) => res.json())
-        .then(setExpenses);
+        .then((data) => setExpenses(Array.isArray(data) ? data : [])); // <-- aqui!
     }
   }, [userId]);
   return [expenses, setExpenses] as const;

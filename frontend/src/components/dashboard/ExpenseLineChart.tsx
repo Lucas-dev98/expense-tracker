@@ -16,6 +16,7 @@ interface ExpenseLineChartProps {
 }
 
 const ExpenseLineChart: React.FC<ExpenseLineChartProps> = ({ expenses }) => {
+  console.log('Dados recebidos para o gráfico de linha:', expenses);
   // Agrupa por data (YYYY-MM-DD) e soma entradas e saídas separadamente
   const dailyData: Record<string, { entrada: number; saida: number }> = {};
   expenses.forEach((exp) => {
@@ -26,12 +27,13 @@ const ExpenseLineChart: React.FC<ExpenseLineChartProps> = ({ expenses }) => {
         dateStr = d.toISOString().slice(0, 10);
       }
     }
+    const amount = Number(exp.amount) || 0; // <-- sempre converte para número
     if (dateStr) {
       if (!dailyData[dateStr]) dailyData[dateStr] = { entrada: 0, saida: 0 };
-      if (exp.amount >= 0) {
-        dailyData[dateStr].entrada += exp.amount;
+      if (amount >= 0) {
+        dailyData[dateStr].entrada += amount;
       } else {
-        dailyData[dateStr].saida += Math.abs(exp.amount);
+        dailyData[dateStr].saida += Math.abs(amount);
       }
     }
   });

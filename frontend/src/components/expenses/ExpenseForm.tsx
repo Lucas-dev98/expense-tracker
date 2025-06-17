@@ -131,14 +131,22 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
         className="w-full p-2 border rounded"
         required
       />
-      <input
-        type="text"
-        placeholder="Categoria"
+      <select
         value={category}
         onChange={(e) => setCategory(e.target.value)}
         className="w-full p-2 border rounded"
         required
-      />
+      >
+        <option value="">Selecione uma categoria</option>
+        <option value="Alimentação">Alimentação</option>
+        <option value="Transporte">Transporte</option>
+        <option value="Moradia">Moradia (Aluguel/Contas)</option>
+        <option value="Lazer">Lazer</option>
+        <option value="Saúde">Saúde</option>
+        <option value="Educação">Educação</option>
+        <option value="Investimentos">Investimentos</option>
+        <option value="Outros">Outros</option>
+      </select>
       <input
         type="date"
         value={date}

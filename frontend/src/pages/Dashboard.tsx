@@ -7,6 +7,7 @@ import DashboardLeft from '../components/dashboard/DashboardLeft';
 import DashboardRight from '../components/dashboard/DashboardRight';
 import DashboardCharts from '../components/dashboard/DashboardCharts';
 
+
 export default function Dashboard() {
   const { user } = useAuth();
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -85,9 +86,7 @@ export default function Dashboard() {
             cancelEdit={() => setEditingExpense(null)}
           />
         )}
-        {user && (
-          <DashboardRight userId={user.uid} refresh={insightsRefresh} />
-        )}
+        {user && <DashboardRight userId={user.uid} refresh={insightsRefresh} />}
       </div>
       <div className="dashboard-separator">
         <hr className="dashboard-hr" />

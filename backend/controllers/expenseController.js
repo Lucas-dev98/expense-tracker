@@ -1,6 +1,18 @@
 import db from '../config/firebase.js';
 import { generateAndSaveInsights } from '../services/aiProcessor.js';
 
+// Categorias válidas (mantenha sincronizado com o frontend)
+const validCategories = [
+  'Alimentação',
+  'Transporte',
+  'Moradia',
+  'Lazer',
+  'Saúde',
+  'Educação',
+  'Investimentos',
+  'Outros'
+];
+
 // Adicionar gasto
 export const addExpense = async (req, res) => {
   try {
@@ -17,22 +29,27 @@ export const addExpense = async (req, res) => {
     } = req.body;
 
     const validMethods = ['Credito', 'Debito', 'Dinheiro'];
+    const amountNumber = typeof amount === 'string' ? Number(amount) : amount; // <-- sempre converte para número
+
     if (
       !description ||
-      typeof amount !== 'number' ||
-      isNaN(amount) ||
+      typeof amountNumber !== 'number' ||
+      isNaN(amountNumber) ||
       !category ||
+      !validCategories.includes(category) ||
       !userId ||
       !type ||
       !paymentMethod ||
       !validMethods.includes(paymentMethod)
     ) {
-      return res.status(400).json({ error: 'Dados obrigatórios ausentes ou inválidos.' });
+      return res
+        .status(400)
+        .json({ error: 'Dados obrigatórios ausentes ou inválidos.' });
     }
 
     const expense = {
       description,
-      amount,
+      amount: amountNumber, // <-- sempre número
       category,
       userId,
       createdAt: createdAt ? new Date(createdAt) : new Date(),
@@ -72,14 +89,15 @@ export const updateExpense = async (req, res) => {
       currentInstallment,
     } = req.body;
 
-    amount = typeof amount === 'string' ? Number(amount) : amount;
+    const amountNumber = typeof amount === 'string' ? Number(amount) : amount; // <-- sempre converte para número
 
     const validMethods = ['Credito', 'Debito', 'Dinheiro'];
     if (
       !description ||
-      typeof amount !== 'number' ||
-      isNaN(amount) ||
+      typeof amountNumber !== 'number' ||
+      isNaN(amountNumber) ||
       !category ||
+      !validCategories.includes(category) ||
       !type ||
       !paymentMethod ||
       !validMethods.includes(paymentMethod)
@@ -91,7 +109,7 @@ export const updateExpense = async (req, res) => {
 
     const updatedExpense = {
       description,
-      amount,
+      amount: amountNumber, // <-- sempre número
       category,
       createdAt: createdAt ? new Date(createdAt) : new Date(),
       type,
@@ -127,6 +145,7 @@ export const deleteExpense = async (req, res) => {
     res.status(500).json({ error: 'Erro ao excluir gasto.' });
   }
 };
+
 // Buscar gastos por usuário
 export const getExpenses = async (req, res) => {
   try {
@@ -134,8 +153,11 @@ export const getExpenses = async (req, res) => {
     if (!userId) {
       return res.status(400).json({ error: 'userId é obrigatório.' });
     }
-    const snapshot = await db.collection('expenses').where('userId', '==', userId).get();
-    const expenses = snapshot.docs.map(doc => ({
+    const snapshot = await db
+      .collection('expenses')
+      .where('userId', '==', userId)
+      .get();
+    const expenses = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
@@ -166,7 +188,7 @@ export const getInsights = async (req, res) => {
     const data = doc.data();
     res.json({ insights: data.insights || [] });
   } catch (error) {
-    console.error('Erro ao buscar insights:', error); // ADICIONE ESTA LINHA
+    console.error('Erro ao buscar insights:', error);
     res.status(500).json({ error: 'Erro ao buscar insights.' });
   }
 };
