@@ -1,7 +1,7 @@
 import db from '../config/firebase.js';
 import { generateAndSaveInsights } from '../services/aiProcessor.js';
 
-// Categorias válidas (mantenha sincronizado com o frontend)
+// Lista de categorias válidas para gastos (deve ser mantida sincronizada com o frontend)
 const validCategories = [
   'Alimentação',
   'Transporte',
@@ -13,9 +13,10 @@ const validCategories = [
   'Outros'
 ];
 
-// Adicionar gasto
+// ========================= Adicionar gasto =========================
 export const addExpense = async (req, res) => {
   try {
+    // Extrai os dados do corpo da requisição
     const {
       description,
       amount,
@@ -28,9 +29,12 @@ export const addExpense = async (req, res) => {
       currentInstallment,
     } = req.body;
 
+    // Métodos de pagamento válidos
     const validMethods = ['Credito', 'Debito', 'Dinheiro'];
-    const amountNumber = typeof amount === 'string' ? Number(amount) : amount; // <-- sempre converte para número
+    // Garante que amount será sempre um número
+    const amountNumber = typeof amount === 'string' ? Number(amount) : amount;
 
+    // Validação dos dados recebidos
     if (
       !description ||
       typeof amountNumber !== 'number' ||
@@ -47,9 +51,10 @@ export const addExpense = async (req, res) => {
         .json({ error: 'Dados obrigatórios ausentes ou inválidos.' });
     }
 
+    // Monta o objeto do gasto
     const expense = {
       description,
-      amount: amountNumber, // <-- sempre número
+      amount: amountNumber,
       category,
       userId,
       createdAt: createdAt ? new Date(createdAt) : new Date(),
@@ -59,8 +64,13 @@ export const addExpense = async (req, res) => {
       currentInstallment,
     };
 
+    // Salva o gasto no Firestore
     const docRef = await db.collection('expenses').add(expense);
+
+    // Gera e salva insights automáticos após adicionar o gasto
     await generateAndSaveInsights(userId, db);
+
+    // Retorna o gasto criado (com id e data formatada)
     res.json({
       id: docRef.id,
       ...expense,
@@ -74,7 +84,7 @@ export const addExpense = async (req, res) => {
   }
 };
 
-// Atualizar gasto
+// ========================= Atualizar gasto =========================
 export const updateExpense = async (req, res) => {
   try {
     const { id } = req.params;
@@ -89,9 +99,11 @@ export const updateExpense = async (req, res) => {
       currentInstallment,
     } = req.body;
 
-    const amountNumber = typeof amount === 'string' ? Number(amount) : amount; // <-- sempre converte para número
+    // Garante que amount será sempre um número
+    const amountNumber = typeof amount === 'string' ? Number(amount) : amount;
 
     const validMethods = ['Credito', 'Debito', 'Dinheiro'];
+    // Validação dos dados recebidos
     if (
       !description ||
       typeof amountNumber !== 'number' ||
@@ -107,9 +119,10 @@ export const updateExpense = async (req, res) => {
         .json({ error: 'Dados obrigatórios ausentes ou inválidos.' });
     }
 
+    // Monta o objeto atualizado do gasto
     const updatedExpense = {
       description,
-      amount: amountNumber, // <-- sempre número
+      amount: amountNumber,
       category,
       createdAt: createdAt ? new Date(createdAt) : new Date(),
       type,
@@ -118,45 +131,58 @@ export const updateExpense = async (req, res) => {
       currentInstallment,
     };
 
+    // Atualiza o gasto no Firestore
     await db.collection('expenses').doc(id).update(updatedExpense);
+
+    // Busca o usuário do gasto para atualizar insights
     const doc = await db.collection('expenses').doc(id).get();
     const userId = doc.data().userId;
 
+    // Gera e salva insights automáticos após editar o gasto
     await generateAndSaveInsights(userId, db);
+
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Erro ao editar gasto.' });
   }
 };
 
-// Excluir gasto
+// ========================= Excluir gasto =========================
 export const deleteExpense = async (req, res) => {
   try {
     const { id } = req.params;
+    // Busca o gasto para obter o userId
     const doc = await db.collection('expenses').doc(id).get();
     if (!doc.exists) {
       return res.status(404).json({ error: 'Gasto não encontrado.' });
     }
     const userId = doc.data().userId;
+
+    // Exclui o gasto do Firestore
     await db.collection('expenses').doc(id).delete();
+
+    // Gera e salva insights automáticos após excluir o gasto
     await generateAndSaveInsights(userId, db);
+
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Erro ao excluir gasto.' });
   }
 };
 
-// Buscar gastos por usuário
+// ========================= Buscar gastos por usuário =========================
 export const getExpenses = async (req, res) => {
   try {
     const { userId } = req.query;
     if (!userId) {
       return res.status(400).json({ error: 'userId é obrigatório.' });
     }
+    // Busca todos os gastos do usuário no Firestore
     const snapshot = await db
       .collection('expenses')
       .where('userId', '==', userId)
       .get();
+    // Mapeia os documentos para um array de objetos
     const expenses = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -167,12 +193,14 @@ export const getExpenses = async (req, res) => {
   }
 };
 
+// ========================= Buscar insights automáticos =========================
 export const getInsights = async (req, res) => {
   try {
     const { userId } = req.query;
     if (!userId) {
       return res.status(400).json({ error: 'userId é obrigatório.' });
     }
+    // Busca o insight mais recente do usuário
     const snapshot = await db
       .collection('insights')
       .where('userId', '==', userId)
@@ -186,6 +214,7 @@ export const getInsights = async (req, res) => {
 
     const doc = snapshot.docs[0];
     const data = doc.data();
+    // Retorna os insights encontrados (ou array vazio)
     res.json({ insights: data.insights || [] });
   } catch (error) {
     console.error('Erro ao buscar insights:', error);
