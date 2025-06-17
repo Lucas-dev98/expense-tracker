@@ -16,9 +16,12 @@ interface ExpenseLineChartProps {
 }
 
 const ExpenseLineChart: React.FC<ExpenseLineChartProps> = ({ expenses }) => {
+  // Log para depuração
   console.log('Dados recebidos para o gráfico de linha:', expenses);
-  // Agrupa por data (YYYY-MM-DD) e soma entradas e saídas separadamente
+
+  // Agrupa por data (YYYY-MM-DD) e separa entradas e saídas
   const dailyData: Record<string, { entrada: number; saida: number }> = {};
+
   expenses.forEach((exp) => {
     let dateStr = '';
     if (exp.createdAt) {
@@ -27,12 +30,12 @@ const ExpenseLineChart: React.FC<ExpenseLineChartProps> = ({ expenses }) => {
         dateStr = d.toISOString().slice(0, 10);
       }
     }
-    const amount = Number(exp.amount) || 0; // <-- sempre converte para número
+    const amount = Number(exp.amount) || 0;
     if (dateStr) {
       if (!dailyData[dateStr]) dailyData[dateStr] = { entrada: 0, saida: 0 };
-      if (amount >= 0) {
+      if (exp.type === 'Entrada') {
         dailyData[dateStr].entrada += amount;
-      } else {
+      } else if (exp.type === 'Saida') {
         dailyData[dateStr].saida += Math.abs(amount);
       }
     }
@@ -60,10 +63,9 @@ const ExpenseLineChart: React.FC<ExpenseLineChartProps> = ({ expenses }) => {
             <XAxis dataKey="date" />
             <YAxis />
             <Tooltip
-              formatter={(value: number, name: string) => [
-                `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-                name === 'entrada' ? 'Entrada' : 'Saída',
-              ]}
+              formatter={(value: number) =>
+                `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+              }
             />
             <Line
               type="monotone"

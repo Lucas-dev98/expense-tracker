@@ -14,17 +14,18 @@ const ai = new GoogleGenAI({ apiKey });
 export async function generateInsightsWithGemini(expenses) {
   // Monta o prompt para a IA, pedindo resposta em formato JSON
   const prompt = `
-    Analise os seguintes gastos (em formato JSON) e gere insights financeiros em português, de forma clara e objetiva.
-    Responda APENAS neste formato JSON:
-    {
-      "insights": [
-        "Insight 1",
-        "Insight 2",
-        "Insight 3"
-      ]
-    }
-    Gastos: ${JSON.stringify(expenses)}
-  `;
+  Analise os seguintes gastos (em formato JSON) e gere EXATAMENTE 4 insights financeiros em português, de forma clara e objetiva.
+  Responda APENAS neste formato JSON, com exatamente 4 insights:
+  {
+    "insights": [
+      "Insight 1",
+      "Insight 2",
+      "Insight 3",
+      "Insight 4"
+    ]
+  }
+  Gastos: ${JSON.stringify(expenses)}
+`;
 
   try {
     // Faz a chamada à API Gemini para gerar os insights

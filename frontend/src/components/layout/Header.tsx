@@ -13,7 +13,7 @@ const Header: React.FC = () => {
   return (
     <header className="main-header">
       <div className="main-header__container">
-        <span className="main-header__logo">💸 Gestão de Gastos IA</span>
+        <span className="main-header__logo">💸 Gestão Inteligente </span>
         {user && (
           <div className="main-header__user">
             <span className="main-header__email">{user.email}</span>
